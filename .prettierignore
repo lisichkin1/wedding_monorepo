@@ -3,5 +3,6 @@ public
 deploy
 docker
 dist
+.vite
 .gitlab-ci.yml
 package-lock.json
