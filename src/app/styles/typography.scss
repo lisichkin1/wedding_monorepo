@@ -1,0 +1,103 @@
+// Mixin for typography styles in SCSS
+
+@mixin typography-Title {
+  font-family: HaussBold;
+  font-size: 56px;
+  line-height: 72px;
+}
+
+@mixin typography-Landing {
+  font-family: HaussBold;
+  font-size: 40px;
+  line-height: 56px;
+}
+
+@mixin typography-H1 {
+  font-family: HaussBold;
+  font-size: 32px;
+  line-height: 40px;
+}
+
+@mixin typography-H2 {
+  font-family: HaussBold;
+  font-size: 28px;
+  line-height: 34px;
+}
+
+@mixin typography-H3 {
+  font-family: HaussBold;
+  font-size: 24px;
+  line-height: 30px;
+}
+
+@mixin typography-Large-Bold {
+  font-family: HaussBold;
+  font-size: 20px;
+  line-height: 24px;
+}
+
+@mixin typography-Large-Semibold {
+  font-family: HaussMedium;
+  font-size: 20px;
+  line-height: 28px;
+}
+
+@mixin typography-Large {
+  font-family: HaussRegular;
+  font-size: 20px;
+  line-height: 28px;
+}
+
+@mixin typography-Medium-Bold {
+  font-family: HaussBold;
+  font-size: 16px;
+  line-height: 22px;
+}
+
+@mixin typography-Medium-Semibold {
+  font-family: HaussMedium;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+@mixin typography-Medium {
+  font-family: HaussRegular;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+@mixin typography-Small-Bold {
+  font-family: HaussBold;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+@mixin typography-Small-Semibold {
+  font-family: HaussMedium;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+@mixin typography-Small {
+  font-family: HaussRegular;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+@mixin typography-Nano {
+  font-family: HaussRegular;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+@mixin typography-Little {
+  font-family: HaussRegular;
+  font-size: 10px;
+  line-height: 20px;
+}
+
+@mixin typography-tiny {
+  font-family: HaussMedium;
+  font-size: 10px;
+  line-height: 14px;
+}

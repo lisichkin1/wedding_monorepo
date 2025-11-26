@@ -1,0 +1,5 @@
+:root {
+  --shadow-dropdown: 0px 0px 20px rgba(0, 0, 0, 0.1);
+  --shadow-mobile-menu: 0px 4px 32px 0px rgba(139, 139, 139, 0.25);
+  --shodow-base: 0px 2px 12px 0px rgba(139, 139, 139, 0.25);
+}

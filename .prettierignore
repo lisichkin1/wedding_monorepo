@@ -1,0 +1,7 @@
+node_modules
+public
+deploy
+docker
+dist
+.gitlab-ci.yml
+package-lock.json
