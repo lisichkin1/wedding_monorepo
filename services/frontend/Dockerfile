@@ -8,9 +8,6 @@ WORKDIR /app
 
 COPY package*.json ./
 
-# КРИТИЧЕСКИ ВАЖНО: отключаем проверку SSL для npm
-RUN npm config set strict-ssl false && \
-    npm config set registry http://registry.npmjs.org/
 
 # Устанавливаем зависимости
 RUN npm install

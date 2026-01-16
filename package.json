@@ -1,0 +1,30 @@
+{
+  "name": "wedding_monorepo",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/lisichkin1/wedding_monorepo#readme",
+  "bugs": {
+    "url": "https://github.com/lisichkin1/wedding_monorepo/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lisichkin1/wedding_monorepo.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  },
+  "lint-staged": {
+    "services/frontend/**/*.{js,jsx,ts,tsx}": [
+      "cd services/frontend && npm run lint",
+      "cd services/frontend && npm run prettier"
+    ]
+  }
+}
