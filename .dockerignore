@@ -1,0 +1,9 @@
+.husky
+dist
+node_modules
+Dockerfile
+.gitlab-ci.yml
+.git
+.gitignore
+.dockerignore
+README.md

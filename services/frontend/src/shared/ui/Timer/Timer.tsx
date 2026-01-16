@@ -1,0 +1,58 @@
+import cn from 'classnames';
+import { useTimer } from '@shared/hooks';
+import s from './styles.module.scss';
+
+interface TimerProps {
+  isView?: boolean;
+}
+
+export const Timer = ({ isView }: TimerProps) => {
+  const { days, hours, minutes, seconds } = useTimer();
+
+  return (
+    <div className={cn(s.timer, { [s.timerView]: !isView })}>
+      <div
+        className={s.day}
+        style={{
+          background: `conic-gradient(#b5b5b5 ${100 - (100 / 60) * days}%, transparent 0)`
+        }}
+      ></div>
+      <div
+        className={s.day}
+        style={{
+          background: `conic-gradient(#b5b5b5 ${100 - (100 / 60) * hours}%, transparent 0)`
+        }}
+      ></div>
+      <div
+        className={s.day}
+        style={{
+          background: `conic-gradient(#b5b5b5 ${100 - (100 / 60) * minutes}%, transparent 0)`
+        }}
+      ></div>
+      <div
+        className={s.day}
+        style={{
+          background: `conic-gradient(#b5b5b5 ${100 - (100 / 60) * seconds}%, transparent 0)`
+        }}
+      ></div>
+      <div className={s.timerCount}>
+        <div className={s.countContainer}>
+          <span className={s.countTitle}>{days}</span>
+          <span className={s.countSubtitle}>Дней</span>
+        </div>
+        <div className={s.countContainer}>
+          <span className={s.countTitle}>{hours}</span>
+          <span className={s.countSubtitle}>Часов</span>
+        </div>
+        <div className={s.countContainer}>
+          <span className={s.countTitle}>{minutes}</span>
+          <span className={s.countSubtitle}>Минут</span>
+        </div>
+        <div className={s.countContainer}>
+          <span className={s.countTitle}>{seconds}</span>
+          <span className={s.countSubtitle}>Секунд</span>
+        </div>
+      </div>
+    </div>
+  );
+};

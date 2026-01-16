@@ -1,0 +1,73 @@
+.timer {
+  display: flex;
+  gap: 16px;
+  position: relative;
+  transition: all 0.8s ease-in-out;
+  visibility: visible;
+  pointer-events: auto;
+  &.timerView {
+    visibility: hidden;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .day {
+    width: 80px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: conic-gradient(red 16%, transparent 0);
+    position: relative;
+
+    .dayCount {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      line-height: 24px;
+      z-index: 100;
+    }
+
+    mask: radial-gradient(
+      circle at center,
+      transparent 37px,
+      white 38px,
+      white 40px,
+      transparent 41px
+    );
+    -webkit-mask: radial-gradient(
+      circle at center,
+      transparent 37px,
+      white 38px,
+      white 40px,
+      transparent 41px
+    );
+  }
+}
+
+.timerCount {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  position: absolute;
+  top: 10px;
+  left: 0;
+  .countContainer {
+    width: 80px;
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .countTitle {
+    text-align: center;
+    color: #b5b5b5;
+    @include typography-H1;
+    line-height: 32px;
+  }
+  .countSubtitle {
+    text-align: center;
+    color: #b5b5b5;
+    @include typography-Medium;
+  }
+}

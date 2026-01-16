@@ -1,0 +1,78 @@
+*,
+::before,
+::after {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+::selection {
+  color: var(--color-text-inverse);
+  background: var(--color-bg-brand);
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-analytics-blue);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @include typography-Medium;
+  font-family: 'Arian', sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @include typography-Medium-Bold;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  vertical-align: bottom;
+  user-select: none;
+}
+
+button {
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+ul,
+ol {
+  li {
+    list-style: none;
+  }
+}
+
+#root {
+  height: 100%;
+}
+
+.loaderWrapper {
+  text-align: center;
+}
