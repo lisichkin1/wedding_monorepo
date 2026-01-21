@@ -1,0 +1,229 @@
+name: Deploy Monorepo Services
+
+on:
+  push:
+    branches: [main, master]
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.txt"
+      - ".gitignore"
+      - ".editorconfig"
+      - "**/*.spec.js"
+      - "**/*.test.js"
+
+jobs:
+  # 1. ДЕТЕКТОР ИЗМЕНЕНИЙ
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend-changed: ${{ steps.filter.outputs.frontend }}
+      backend-changed: ${{ steps.filter.outputs.backend }}
+      bot-changed: ${{ steps.filter.outputs.bot }}
+      docker-compose-changed: ${{ steps.filter.outputs.docker-compose }}
+      all-changed: ${{ steps.filter.outputs.any_changed }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed services
+        id: filter
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            frontend:
+              - 'services/frontend/**'
+              - 'package-lock.json'
+              - 'package.json'
+            backend:
+              - 'services/backend/**'
+            bot:
+              - 'services/bot/**'
+            docker-compose:
+              - 'docker-compose.yml'
+              - 'docker-compose.*.yml'
+              - '.github/workflows/deploy.yml'
+            any_changed: '*'  # Любые изменения
+
+  # 2. ПРЕДВАРИТЕЛЬНЫЕ ПРОВЕРКИ (опционально)
+  lint-and-test:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.frontend-changed == 'true' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: services/frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: |
+          cd services/frontend
+          npm ci
+
+      - name: Lint frontend
+        run: |
+          cd services/frontend
+          npm run lint || true
+
+      - name: Build frontend
+        run: |
+          cd services/frontend
+          npm run build
+
+  # 3. ОСНОВНОЙ ДЕПЛОЙ
+  deploy:
+    needs: [detect-changes, lint-and-test]
+    runs-on: ubuntu-latest
+    if: ${{ needs.detect-changes.outputs.all-changed == 'true' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH for deployment
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Sync changed files
+        run: |
+          echo "🔄 Syncing files to server..."
+
+          # Копируем ВСЕ файлы репозитория (можно оптимизировать)
+          rsync -avz --delete \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='.env' \
+            --exclude='*.log' \
+            -e "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30" \
+            ./ root@${{ secrets.SERVER_IP }}:/root/projects/wedding_monorepo/
+
+      - name: Execute deployment script
+        run: |
+          echo "🚀 Starting deployment..."
+
+          # Передаем информацию об измененных сервисах
+          FRONTEND_CHANGED="${{ needs.detect-changes.outputs.frontend-changed }}"
+          BACKEND_CHANGED="${{ needs.detect-changes.outputs.backend-changed }}"
+          BOT_CHANGED="${{ needs.detect-changes.outputs.bot-changed }}"
+          DOCKER_COMPOSE_CHANGED="${{ needs.detect-changes.outputs.docker-compose-changed }}"
+
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 root@${{ secrets.SERVER_IP }} << EOF
+            set -e
+            
+            echo "📁 Changing to project directory..."
+            cd /root/projects/wedding_monorepo
+            
+            # Функция для деплоя сервиса
+            deploy_service() {
+              local service_name=\$1
+              echo "🔧 Deploying \${service_name}..."
+              
+              # Останавливаем только этот сервис
+              docker compose stop \${service_name} 2>/dev/null || true
+              docker compose rm -f \${service_name} 2>/dev/null || true
+              
+              # Пересобираем и запускаем
+              docker compose up -d --build \${service_name}
+              
+              # Ждем и проверяем
+              sleep 5
+              echo "📊 Status of \${service_name}:"
+              docker compose ps \${service_name}
+              
+              # Логи последние 5 строк
+              echo "📋 Logs tail for \${service_name}:"
+              docker compose logs --tail=5 \${service_name} 2>/dev/null || true
+            }
+            
+            # Определяем какие сервисы деплоить
+            SERVICES_TO_DEPLOY=""
+            
+            if [ "$FRONTEND_CHANGED" = "true" ] || [ "$DOCKER_COMPOSE_CHANGED" = "true" ]; then
+              SERVICES_TO_DEPLOY="\${SERVICES_TO_DEPLOY} frontend"
+            fi
+            
+            if [ "$BACKEND_CHANGED" = "true" ] || [ "$DOCKER_COMPOSE_CHANGED" = "true" ]; then
+              SERVICES_TO_DEPLOY="\${SERVICES_TO_DEPLOY} backend"
+            fi
+            
+            if [ "$BOT_CHANGED" = "true" ] || [ "$DOCKER_COMPOSE_CHANGED" = "true" ]; then
+              SERVICES_TO_DEPLOY="\${SERVICES_TO_DEPLOY} telegram-bot"
+            fi
+            
+            # Если изменился docker-compose или все сервисы, перезапускаем всё
+            if [ "$DOCKER_COMPOSE_CHANGED" = "true" ] && [ -z "\$SERVICES_TO_DEPLOY" ]; then
+              echo "🔄 Docker-compose changed, redeploying all services..."
+              docker compose down
+              docker compose up -d --build
+            else
+              # Деплоим каждый измененный сервис
+              for service in \$SERVICES_TO_DEPLOY; do
+                deploy_service "\$service"
+              done
+            fi
+            
+            # Финал: показываем статус всех сервисов
+            echo "🎯 Final status of all services:"
+            docker compose ps
+            
+            # Проверка здоровья фронтенда
+            if docker compose ps frontend | grep -q "Up"; then
+              echo "🌐 Frontend is running at: http://${{ secrets.SERVER_IP }}:3000"
+            fi
+            
+          EOF
+
+      - name: Send deployment notification
+        if: success()
+        run: |
+          echo "✅ Deployment completed successfully!"
+          # Можно добавить уведомление в Telegram/Slack
+          # curl -X POST ...
+
+  # 4. РОЛБЭК ПРИ НЕУДАЧЕ
+  rollback:
+    needs: deploy
+    if: failure() && needs.deploy.result == 'failure'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup SSH for rollback
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Execute rollback
+        run: |
+          echo "🔄 Attempting rollback..."
+
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} << 'EOF'
+            cd /root/projects/wedding_monorepo
+            
+            echo "⏮️ Rolling back to previous version..."
+            
+            # Откатываем git (если используется)
+            git checkout HEAD~1 2>/dev/null || true
+            
+            # Перезапускаем все сервисы с предыдущей версией
+            docker compose down
+            docker compose up -d
+            
+            echo "✅ Rollback completed"
+            echo "📊 Current status:"
+            docker compose ps
+          EOFs
