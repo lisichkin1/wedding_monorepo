@@ -15,7 +15,6 @@
     width: 80px;
     aspect-ratio: 1;
     border-radius: 50%;
-    background: conic-gradient(red 16%, transparent 0);
     position: relative;
 
     .dayCount {
@@ -61,13 +60,13 @@
   }
   .countTitle {
     text-align: center;
-    color: #b5b5b5;
+    color: #fff;
     @include typography-H1;
     line-height: 32px;
   }
   .countSubtitle {
     text-align: center;
-    color: #b5b5b5;
+    color: #fff;
     @include typography-Medium;
   }
 }

@@ -8,31 +8,31 @@ interface TimerProps {
 
 export const Timer = ({ isView }: TimerProps) => {
   const { days, hours, minutes, seconds } = useTimer();
-
+  console.log(days, hours, minutes, seconds);
   return (
     <div className={cn(s.timer, { [s.timerView]: !isView })}>
       <div
         className={s.day}
         style={{
-          background: `conic-gradient(#b5b5b5 ${100 - (100 / 60) * days}%, transparent 0)`
+          background: `conic-gradient(#fff ${100 - (100 / 365) * days}%, transparent 0)`
         }}
       ></div>
       <div
         className={s.day}
         style={{
-          background: `conic-gradient(#b5b5b5 ${100 - (100 / 60) * hours}%, transparent 0)`
+          background: `conic-gradient(#fff ${100 - (100 / 60) * hours}%, transparent 0)`
         }}
       ></div>
       <div
         className={s.day}
         style={{
-          background: `conic-gradient(#b5b5b5 ${100 - (100 / 60) * minutes}%, transparent 0)`
+          background: `conic-gradient(#fff ${100 - (100 / 60) * minutes}%, transparent 0)`
         }}
       ></div>
       <div
         className={s.day}
         style={{
-          background: `conic-gradient(#b5b5b5 ${100 - (100 / 60) * seconds}%, transparent 0)`
+          background: `conic-gradient(#fff ${100 - (100 / 60) * seconds}%, transparent 0)`
         }}
       ></div>
       <div className={s.timerCount}>

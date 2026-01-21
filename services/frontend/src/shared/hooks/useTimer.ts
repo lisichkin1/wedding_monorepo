@@ -1,6 +1,7 @@
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 import 'moment-timezone';
+import { TIME } from '@shared/constants';
 
 export const useTimer = () => {
   const [days, setDays] = useState(0);
@@ -10,7 +11,7 @@ export const useTimer = () => {
 
   useEffect(() => {
     const timer = () => {
-      const futureDate = moment.tz('2025-12-31 00:00', 'Europe/Saratov');
+      const futureDate = moment.tz(TIME, 'Europe/Saratov');
 
       // Текущее локальное время пользователя
       const now = moment();

@@ -1,6 +1,6 @@
 import cn from 'classnames';
-import { useState } from 'react';
-import WelcomeImg from '../../images/e7fcbcf05bc59b899fb39440e6fa8ceb.jpg';
+import { useEffect, useRef, useState } from 'react';
+import WelcomeImg from '../../images/postcard.jpg';
 import { Icon } from '../Icon';
 import { LazyImage } from '../LazyImage';
 import { Timer } from '../Timer';
@@ -14,6 +14,15 @@ export const WelcomeImage = () => {
     setIsExpanded(!isExpanded);
   };
 
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (imageContainerRef.current) {
+      imageContainerRef.current.style.transform = isExpanded
+        ? 'scale(1) '
+        : 'scale(2) ';
+    }
+  }, [isExpanded]);
   return (
     <div className={s.container}>
       <div
@@ -22,9 +31,12 @@ export const WelcomeImage = () => {
         })}
       >
         <LazyImage
+          ref={imageContainerRef}
           img={WelcomeImg}
-          className={s.image}
-          wrapperClassName={s.lazyImageWrapper}
+          className={cn(s.image)}
+          wrapperClassName={cn(s.lazyImageWrapper, {
+            [s.imageExpanded]: !isExpanded
+          })}
         />
       </div>
       <div
@@ -55,7 +67,11 @@ export const WelcomeImage = () => {
         </button>
         <span className={s.buttonText}>Разблокируйте приглашение</span>
       </div>
-      <div className={s.titleContainer}>
+      <div
+        className={cn(s.titleContainer, {
+          [s.titleContainerView]: !isExpanded
+        })}
+      >
         <div className={s.internalTitleContainer}>
           <span className={cn(s.letter, s.right)}>A</span>
           <h1 className={s.title}>АБАТ & АЙНАРА</h1>
