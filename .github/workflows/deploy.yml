@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Важно: получаем всю историю
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
@@ -31,8 +33,18 @@ jobs:
         id: detect
         run: |
           echo "Checking changed files..."
-          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
-          echo "Changed files: $CHANGED_FILES"
+
+          # Используем правильный способ получения изменений
+          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            # Первый коммит - берем все файлы
+            CHANGED_FILES=$(git ls-tree -r --name-only HEAD)
+          else
+            # Обычный коммит - сравниваем с предыдущим
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          fi
+
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
 
           # Определяем, какие сервисы изменились
           FRONTEND_CHANGED="false"
@@ -42,23 +54,28 @@ jobs:
 
           if echo "$CHANGED_FILES" | grep -q "services/frontend"; then
             FRONTEND_CHANGED="true"
+            echo "Frontend changed"
           fi
 
           if echo "$CHANGED_FILES" | grep -q "services/backend"; then
             BACKEND_CHANGED="true"
+            echo "Backend changed"
           fi
 
           if echo "$CHANGED_FILES" | grep -q "services/bot"; then
             BOT_CHANGED="true"
+            echo "Bot changed"
           fi
 
           if echo "$CHANGED_FILES" | grep -q "docker-compose"; then
             COMPOSE_CHANGED="true"
+            echo "Docker-compose changed"
           fi
 
           # Если изменились другие файлы в корне (кроме игнорируемых), тоже помечаем как изменение
           if echo "$CHANGED_FILES" | grep -v "^services/" | grep -v "^\.github/" | grep -v "^README" | grep -v "\.md$" | grep -q "."; then
             COMPOSE_CHANGED="true"
+            echo "Other root files changed"
           fi
 
           echo "frontend_changed=$FRONTEND_CHANGED" >> $GITHUB_OUTPUT
