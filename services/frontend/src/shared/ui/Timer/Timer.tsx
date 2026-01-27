@@ -9,6 +9,12 @@ interface TimerProps {
 export const Timer = ({ isView }: TimerProps) => {
   const { days, hours, minutes, seconds } = useTimer();
   console.log(days, hours, minutes, seconds);
+  console.log(
+    100 - (100 / 365) * days,
+    100 - (100 / 60) * hours,
+    100 - (100 / 60) * minutes,
+    100 - (100 / 60) * seconds
+  );
   return (
     <div className={cn(s.timer, { [s.timerView]: !isView })}>
       <div
@@ -20,13 +26,13 @@ export const Timer = ({ isView }: TimerProps) => {
       <div
         className={s.day}
         style={{
-          background: `conic-gradient(#fff ${100 - (100 / 60) * hours}%, transparent 0)`
+          background: `conic-gradient(#fff ${(100 / 24) * hours}%, transparent 0)`
         }}
       ></div>
       <div
         className={s.day}
         style={{
-          background: `conic-gradient(#fff ${100 - (100 / 60) * minutes}%, transparent 0)`
+          background: `conic-gradient(#fff ${(100 / 60) * minutes}%, transparent 0)`
         }}
       ></div>
       <div

@@ -1,6 +1,6 @@
 import cn from 'classnames';
 import { useEffect, useRef, useState } from 'react';
-import WelcomeImg from '../../images/postcard.jpg';
+import WelcomeImg from '../../images/320.jpg';
 import { Icon } from '../Icon';
 import { LazyImage } from '../LazyImage';
 import { Timer } from '../Timer';
@@ -19,8 +19,8 @@ export const WelcomeImage = () => {
   useEffect(() => {
     if (imageContainerRef.current) {
       imageContainerRef.current.style.transform = isExpanded
-        ? 'scale(1) '
-        : 'scale(2) ';
+        ? 'translateX(-30px) scale(1) '
+        : 'translate(-10px, 30px) scale(1.5) ';
     }
   }, [isExpanded]);
   return (

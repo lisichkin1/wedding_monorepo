@@ -6,7 +6,6 @@ export const HomePage = () => {
   const { data: hierarchyData } = useQuery({
     queryKey: ['FFF'],
     queryFn: () => factsAPI.getHierarchy(),
-
     meta: {
       errorHandling: 'global'
     },
