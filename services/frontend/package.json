@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "prettier": "npx prettier . --write"
   },
-  "lint-front": {
+  "lint-staged": {
     "*.@(ts|tsx)": [
       "npm run lint",
       "npm run prettier"
