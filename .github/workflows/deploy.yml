@@ -93,6 +93,17 @@ jobs:
             -e "ssh -o StrictHostKeyChecking=no" \
             ./ root@${{ secrets.SERVER_IP }}:/root/projects/wedding_monorepo/
 
+      - name: Create backend .env file securely
+        run: |
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} "bash -s" << EOF
+          mkdir -p /root/projects/wedding_monorepo/services/backend
+          cat > /root/projects/wedding_monorepo/services/backend/.env << BACKEND_ENV
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+          NODE_ENV=production
+          BACKEND_ENV
+          EOF
+
       - name: Deploy to server
         run: |
           echo "🚀 Starting deployment..."

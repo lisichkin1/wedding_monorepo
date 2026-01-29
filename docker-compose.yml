@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  # Основной фронтенд-сервис
+  #фронтенд-сервис
   frontend:
     build:
       context: services/frontend # Контекст сборки - текущая директория
@@ -9,59 +9,26 @@ services:
       args:
         NGINX_CONF: nginx.conf
     ports:
-      - "3000:3000" # Проброс портов: хост:контейнер
+      - "3000:3000" # Проброс портов
     networks:
       - app-network
     restart: unless-stopped
-    # Для разработки можно раскомментировать volumes для горячей перезагрузки:
-    # volumes:
-    #   - ./src:/app/src
-    #   - ./public:/app/public
 
-  # === СЕРВИСЫ ДЛЯ БУДУЩЕГО РАСШИРЕНИЯ ===
-  # Раскомментируйте и настройте по мере добавления компонентов
-
-  # api:
-  #   build: ./api  # Путь к директории с Dockerfile для API
-  #   ports:
-  #     - "5000:5000"
-  #   environment:
-  #     - DATABASE_URL=postgresql://wedding_user:securepass@db:5432/wedding_db
-  #     - NODE_ENV=production
-  #   depends_on:
-  #     - db
-  #   networks:
-  #     - app-network
-  #   restart: unless-stopped
-
-  # db:
-  #   image: postgres:15-alpine
-  #   environment:
-  #     POSTGRES_USER: wedding_user
-  #     POSTGRES_PASSWORD: securepass
-  #     POSTGRES_DB: wedding_db
-  #   volumes:
-  #     - pgdata:/var/lib/postgresql/data
-  #   networks:
-  #     - app-network
-  #   restart: unless-stopped
-
-  # telegram-bot:
-  #   build: ./bot
-  #   environment:
-  #     - API_BASE_URL=http://api:5000
-  #     - TELEGRAM_TOKEN=your_bot_token_here
-  #   depends_on:
-  #     - api
-  #   networks:
-  #     - app-network
-  #   restart: unless-stopped
+    #бекенд-сервис
+  backend:
+    build:
+      context: services/backend # Контекст сборки - текущая директория
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    env_file:
+      - services/backend/.env
+    networks:
+      - app-network
+    restart: unless-stopped
 
 networks:
   app-network:
     driver: bridge
     name: wedding_net # Явное имя сети для удобства отладки
 
-# volumes:
-#   pgdata:  # Для постоянного хранения данных PostgreSQL
-#     name: wedding_pgdata

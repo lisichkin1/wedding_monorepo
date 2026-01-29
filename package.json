@@ -25,6 +25,10 @@
     "services/frontend/**/*.{js,jsx,ts,tsx}": [
       "cd services/frontend && npm run lint",
       "cd services/frontend && npm run prettier"
+    ],
+    "services/backend/**/*.{js,ts,mjs,cjs,json}": [
+      "cd services/backend && npm run lint",
+      "cd services/backend && npm run prettier"
     ]
   }
 }
