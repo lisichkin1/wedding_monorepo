@@ -1,1 +1,1 @@
-export { generateToken } from './token.js';
+export { generateToken } from './token';
