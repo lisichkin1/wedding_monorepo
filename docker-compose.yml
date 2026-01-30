@@ -43,3 +43,5 @@ networks:
     driver: bridge
     name: wedding_net # Явное имя сети для удобства отладки
 
+volumes:
+  postgres_data:
