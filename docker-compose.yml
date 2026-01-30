@@ -25,6 +25,19 @@ services:
       - app-network
     restart: unless-stopped
 
+  postgres:
+    image: postgres:15-alpine
+    container_name: wedding_postgres
+    env_file:
+      - postgres.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    restart: unless-stopped
+
 networks:
   app-network:
     driver: bridge

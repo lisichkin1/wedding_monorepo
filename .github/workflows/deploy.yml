@@ -104,6 +104,26 @@ jobs:
           BACKEND_ENV
           EOF
 
+      - name: Create postgres.env file securely
+        run: |
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} "bash -s" << 'EOF'
+          # Создаём директорию проекта
+          mkdir -p /root/projects/wedding_monorepo
+
+          # Создаём файл с секретами
+          cat > /root/projects/wedding_monorepo/postgres.env << 'POSTGRES_ENV'
+          POSTGRES_USER=${POSTGRES_USER}
+          POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+          POSTGRES_DB=${POSTGRES_DB}
+          POSTGRES_ENV
+
+          # Устанавливаем строгие права: только владелец может читать/писать
+          chmod 600 /root/projects/wedding_monorepo/postgres.env
+
+          # Проверяем, что файл создан
+          echo "postgres.env created with permissions: $(stat -c '%a' /root/projects/wedding_monorepo/postgres.env)"
+          EOF
+
       - name: Deploy to server
         run: |
           echo "🚀 Starting deployment..."
