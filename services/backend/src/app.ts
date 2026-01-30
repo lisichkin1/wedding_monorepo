@@ -18,6 +18,10 @@ app.use(
 );
 app.use(express.json());
 
+app.use((_, __, next) => {
+  next();
+});
+
 // Роуты
 app.use(guestRoutes);
 
