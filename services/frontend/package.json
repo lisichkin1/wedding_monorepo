@@ -11,12 +11,6 @@
     "preview": "vite preview",
     "prettier": "npx prettier . --write"
   },
-  "lint-staged": {
-    "*.@(ts|tsx)": [
-      "npm run lint",
-      "npm run prettier"
-    ]
-  },
   "dependencies": {
     "@tanstack/react-query": "^5.90.10",
     "@types/react": "^18.3.11",

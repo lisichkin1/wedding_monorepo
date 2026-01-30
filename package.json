@@ -16,19 +16,24 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "husky"
+    "prepare": "husky",
+    "lint:backend": "cd services/backend && npm run lint",
+    "prettier:backend": "cd services/backend && npm run prettier",
+    "lint:frontend": "cd services/frontend && npm run lint",
+    "prettier:frontend": "cd services/frontend && npm run prettier"
   },
   "devDependencies": {
-    "husky": "^9.1.7"
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7"
   },
   "lint-staged": {
     "services/frontend/**/*.{js,jsx,ts,tsx}": [
-      "cd services/frontend && npm run lint",
-      "cd services/frontend && npm run prettier"
+      "npm run lint:frontend",
+      "npm run prettier:frontend"
     ],
-    "services/backend/**/*.{js,ts,mjs,cjs,json}": [
-      "cd services/backend && npm run lint",
-      "cd services/backend && npm run prettier"
+    "services/backend/**/*.{ts,tsx,mjs,cjs,json}": [
+      "npm run lint:backend",
+      "npm run prettier:backend"
     ]
   }
 }
