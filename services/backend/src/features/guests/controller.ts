@@ -5,6 +5,36 @@ import { generateToken } from '~/utils';
 
 import pool from '../../db';
 
+// Получение всех гостей
+export const getGuests = async (
+  req: Request,
+  res: Response<ApiResponse<Guest[]>>
+): Promise<void> => {
+  try {
+    const result = await pool.query(
+      `SELECT token, name, confirmed, created_at 
+       FROM guests 
+       ORDER BY created_at DESC`
+    );
+
+    const guests: Guest[] = result.rows;
+
+    console.log(`Запрошено ${guests.length} гостей`);
+
+    res.json({
+      success: true,
+      message: 'Список гостей получен',
+      data: guests
+    });
+  } catch (error) {
+    console.error('Ошибка получения списка гостей:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Ошибка сервера'
+    });
+  }
+};
+
 // Создание гостя
 export const createGuest = async (
   req: Request<never, never, GuestCreateInput>,
@@ -60,6 +90,58 @@ export const createGuest = async (
     res.status(500).json({
       success: false,
       error: 'Внутренняя ошибка сервера'
+    });
+  }
+};
+
+// Удаление гостя по токену
+export const deleteGuest = async (
+  req: Request<{ token: string }>,
+  res: Response<ApiResponse<{ token: string; name: string }>>
+): Promise<void> => {
+  try {
+    const { token } = req.params;
+
+    // Валидация токена
+    if (!token || token.trim().length === 0) {
+      res.status(400).json({
+        success: false,
+        error: 'Токен обязателен'
+      });
+      return;
+    }
+
+    const result = await pool.query(
+      `DELETE FROM guests 
+       WHERE token = $1 
+       RETURNING token, name`,
+      [token.trim()]
+    );
+
+    if (result.rows.length === 0) {
+      res.status(404).json({
+        success: false,
+        error: 'Гость не найден'
+      });
+      return;
+    }
+
+    const deletedGuest = result.rows[0];
+    console.log(`🗑️ Гость "${deletedGuest.name}" удалён`);
+
+    res.json({
+      success: true,
+      message: 'Гость успешно удалён',
+      data: {
+        token: deletedGuest.token,
+        name: deletedGuest.name
+      }
+    });
+  } catch (error) {
+    console.error('Ошибка удаления гостя:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Ошибка сервера'
     });
   }
 };
