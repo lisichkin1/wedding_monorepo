@@ -20,3 +20,4 @@ router.delete('/guests/:token', authenticateBot, deleteGuest);
 // POST /guests/confirm/:token - доступна всем (через токен)
 router.post('/guests/confirm/:token', confirmGuest);
 export default router;
+//test
