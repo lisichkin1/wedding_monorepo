@@ -86,7 +86,7 @@ jobs:
       - name: Copy files to server
         run: |
           echo "📦 Copying files to server..."
-          rsync -avz \
+          rsync -avz --delete \
             --exclude='.git' \
             --exclude='node_modules' \
             --exclude='*.log' \
