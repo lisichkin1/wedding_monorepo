@@ -10,10 +10,12 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5000'
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'X-API-Key'],
+    credentials: true
   })
 );
 app.use(express.json());
@@ -22,7 +24,6 @@ app.use((_, __, next) => {
   next();
 });
 
-// Роуты
 app.use(guestRoutes);
 
 export default app;
