@@ -15,7 +15,7 @@ router.get('/guests', getGuests);
 
 // POST /guests - только для бота
 router.post('/guests', authenticateBot, createGuest);
-router.delete('/guests', authenticateBot, deleteGuest);
+router.delete('/guests/:token', authenticateBot, deleteGuest);
 
 // POST /guests/confirm/:token - доступна всем (через токен)
 router.post('/guests/confirm/:token', confirmGuest);
