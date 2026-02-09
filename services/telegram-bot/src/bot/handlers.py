@@ -20,7 +20,7 @@ async def cmd_start(message: Message):
 
     await message.answer(
         f"👋 Привет, {user.first_name}!\n\n"
-        "Я бот с меню и подключением к бэкенду.\n"
+        "Я бот для управления гостями на свадьбу.\n"
         "Выберите действие:",
         reply_markup=get_main_menu(),
     )
@@ -139,6 +139,180 @@ async def process_guest_name(message: Message, state: FSMContext):
             reply_markup=get_management_menu(),
         )
         await state.clear()
+
+@router.message(F.text == "🗑️ Удалить гостя")
+async def handle_delete_guest(message: Message, state: FSMContext):
+    """Начало процесса удаления гостя — запрашиваем токен"""
+    await state.set_state(GuestStates.waiting_for_token)
+
+    await message.answer(
+        "🗑️ <b>Удаление гостя</b>\n\n"
+        "Пожалуйста, введите <b>токен гостя</b>:\n\n"
+        "💡 Токен можно найти в списке гостей или в сообщении при создании гостя.\n"
+        "❌ Чтобы отменить: нажмите /start",
+        parse_mode="HTML",
+    )
+
+@router.message(GuestStates.waiting_for_token)
+async def process_guest_token(message: Message, state: FSMContext):
+    """Обработка введённого токена и удаление гостя"""
+    token = message.text.strip()
+
+    # Валидация
+    if not token:
+        await message.answer(
+            "❌ <b>Ошибка</b>\n\n"
+            "Токен не может быть пустым. Пожалуйста, введите токен:",
+            parse_mode="HTML",
+        )
+        return
+
+    if len(token) < 10:
+        await message.answer(
+            "❌ <b>Ошибка</b>\n\n"
+            "Токен слишком короткий. Проверьте правильность ввода:",
+            parse_mode="HTML",
+        )
+        return
+
+    await message.answer("⏳ Удаляю гостя...")
+
+    try:
+        result = backend.delete_guest(token)
+
+        if result and result.get("success"):
+            guest_data = result.get("data", {})
+            
+            response_text = (
+                f"✅ <b>Гость удалён!</b>\n\n"
+                f"👤 <b>Имя:</b> {guest_data.get('name')}\n"
+                f"🔑 <b>Токен:</b> <code>{guest_data.get('token')}</code>\n\n"
+                f"Гость успешно удалён из списка."
+            )
+
+            await message.answer(
+                response_text, parse_mode="HTML", reply_markup=get_management_menu()
+            )
+
+            logger.info(f"Гость '{guest_data.get('name')}' удалён")
+            await state.clear()
+
+        else:
+            error_msg = (
+                result.get("error", "Неизвестная ошибка")
+                if result
+                else "Сервер недоступен"
+            )
+
+            await message.answer(
+                f"❌ <b>Ошибка удаления гостя</b>\n\n"
+                f"{error_msg}\n\n"
+                "Попробуйте ещё раз или проверьте токен.",
+                parse_mode="HTML",
+                reply_markup=get_management_menu(),
+            )
+
+            logger.error(f"Ошибка удаления гостя с токеном '{token}': {error_msg}")
+            await state.clear()
+
+    except Exception as e:
+        logger.error(f"Критическая ошибка при удалении гостя: {e}")
+        await message.answer(
+            "❌ <b>Критическая ошибка</b>\n\n"
+            "Не удалось удалить гостя. Попробуйте позже.",
+            parse_mode="HTML",
+            reply_markup=get_management_menu(),
+        )
+        await state.clear()
+
+@router.message(F.text == "📋 Список гостей")
+async def handle_guests_list(message: Message):
+    """Получение и отображение списка всех гостей"""
+    await message.answer("⏳ Загружаю список гостей...")
+
+    try:
+        result = backend.get_guests()
+
+        if result and result.get("success"):
+            guests = result.get("data", [])
+            
+            if not guests:
+                await message.answer(
+                    "📋 <b>Список гостей пуст</b>\n\n"
+                    "Добавьте первого гостя через меню «➕️ Добавить гостя»",
+                    parse_mode="HTML",
+                    reply_markup=get_management_menu()
+                )
+                return
+
+            # Формируем сообщение со списком гостей
+            total = len(guests)
+            confirmed = sum(1 for g in guests if g.get("confirmed"))
+            
+            text = (
+                f"📋 <b>Список гостей</b>\n\n"
+                f"👥 Всего: <b>{total}</b>\n"
+                f"✅ Подтвердили: <b>{confirmed}</b>\n"
+                f"⏳ Ожидают: <b>{total - confirmed}</b>\n\n"
+                f"<b>Подробный список:</b>\n"
+            )
+
+            for i, guest in enumerate(guests, 1):
+                status = "✅" if guest.get("confirmed") else "⏳"
+                token = guest.get("token", "")[:12] + "..."  # Сокращаем токен
+                created_at = guest.get("created_at", "")[:10]  # Только дата
+                
+                text += (
+                    f"\n<b>{i}.</b> {status} <b>{guest.get('name')}</b>\n"
+                    f"   🔑 <code>{token}</code>\n"
+                    f"   📅 {created_at}\n"
+                )
+
+            # Если сообщение слишком длинное, разбиваем на части
+            if len(text) > 4096:
+                # Отправляем краткую статистику
+                summary = (
+                    f"📋 <b>Список гостей</b>\n\n"
+                    f"👥 Всего: <b>{total}</b>\n"
+                    f"✅ Подтвердили: <b>{confirmed}</b>\n"
+                    f"⏳ Ожидают: <b>{total - confirmed}</b>\n\n"
+                    f"<i>Список слишком длинный для отображения в одном сообщении.</i>"
+                )
+                await message.answer(
+                    summary, parse_mode="HTML", reply_markup=get_management_menu()
+                )
+            else:
+                await message.answer(
+                    text, parse_mode="HTML", reply_markup=get_management_menu()
+                )
+
+            logger.info(f"Отображён список {total} гостей")
+
+        else:
+            error_msg = (
+                result.get("error", "Неизвестная ошибка")
+                if result
+                else "Сервер недоступен"
+            )
+
+            await message.answer(
+                f"❌ <b>Ошибка получения списка</b>\n\n"
+                f"{error_msg}\n\n"
+                "Попробуйте ещё раз.",
+                parse_mode="HTML",
+                reply_markup=get_management_menu(),
+            )
+
+            logger.error(f"Ошибка получения списка гостей: {error_msg}")
+
+    except Exception as e:
+        logger.error(f"Критическая ошибка при получении списка гостей: {e}")
+        await message.answer(
+            "❌ <b>Критическая ошибка</b>\n\n"
+            "Не удалось загрузить список гостей. Попробуйте позже.",
+            parse_mode="HTML",
+            reply_markup=get_management_menu(),
+        )
 
 
 # Кнопка "Настройки"

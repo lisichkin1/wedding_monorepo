@@ -1,16 +1,21 @@
 import express from 'express';
 
-import { authenticateGuestRoutes } from '~/middleware/guest-auth';
+import { authenticateBot } from '~/middleware/auth';
 
-import { confirmGuest, createGuest, deleteGuest } from './controller';
+import {
+  confirmGuest,
+  createGuest,
+  deleteGuest,
+  getGuests
+} from './controller';
 
 const router = express.Router();
 // GET запросы - доступны фронтенду и боту
-router.get('/guests', authenticateGuestRoutes);
+router.get('/guests', getGuests);
 
 // POST /guests - только для бота
-router.post('/guests', authenticateGuestRoutes, createGuest);
-router.post('/guests', authenticateGuestRoutes, deleteGuest);
+router.post('/guests', authenticateBot, createGuest);
+router.delete('/guests', authenticateBot, deleteGuest);
 
 // POST /guests/confirm/:token - доступна всем (через токен)
 router.post('/guests/confirm/:token', confirmGuest);

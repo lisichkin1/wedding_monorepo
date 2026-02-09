@@ -44,3 +44,22 @@ class BackendService:
         except RequestException as e:
             logger.error(f"Ошибка получения списка гостей: {e}")
             return None
+    
+    def delete_guest(self, token: str) -> dict | None:
+        try:
+            response = requests.delete(
+                f"{self.base_url}/api/guests/{token}",
+                headers=self.headers,
+                timeout=self.timeout
+            )
+            response.raise_for_status()
+            return response.json()
+            
+        except RequestException as e:
+            logger.error(f"Ошибка удаления гостя: {e}")
+            if hasattr(e, 'response') and e.response is not None:
+                try:
+                    return e.response.json()
+                except ValueError:
+                    return {"success": False, "error": f"Ошибка сервера: {e}"}
+            return {"success": False, "error": "Не удалось подключиться к серверу"}

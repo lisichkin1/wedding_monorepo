@@ -20,10 +20,9 @@ def get_management_menu() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="➕️ Добавить гостя")],
-            [KeyboardButton(text="➖️ Удалить гостя")],
-            [KeyboardButton(text="👥 Гости")],
-            [KeyboardButton(text="🔄 Обновить данные")],
-            [KeyboardButton(text="⬅️ Назад")],
+            [KeyboardButton(text="🗑️ Удалить гостя")],
+            [KeyboardButton(text="📋 Список гостей")],
+            [KeyboardButton(text="⬅️ Назад")]
         ],
         resize_keyboard=True,
         one_time_keyboard=False,
