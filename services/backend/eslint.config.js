@@ -7,14 +7,11 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import vitest from '@vitest/eslint-plugin';
 
 export default defineConfig([
-  {
-    ignores: ['dist/', 'node_modules/']
-  },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   eslintPluginUnicorn.configs['recommended'],
   {
-    files: ['src/**/*.{js,ts}'],
+    files: ['**/*.{js,ts}'],
     ignores: ['**/*.js', 'dist/**/*', 'node_modules/**/*'],
     plugins: {
       'simple-import-sort': simpleImportSort

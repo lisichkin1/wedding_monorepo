@@ -1,10 +1,7 @@
-import {
-  type ApiResponse,
-  type Guest,
-  type GuestCreateInput
-} from '@shared/types';
-import { generateToken } from '@utils/token';
 import { type Request, type Response } from 'express';
+
+import { ApiResponse, Guest, GuestCreateInput } from '~/shared/types';
+import { generateToken } from '~/utils';
 
 import pool from '../../db';
 
@@ -16,7 +13,6 @@ export const createGuest = async (
   try {
     const { name } = req.body;
 
-    // Валидация
     if (!name || name.trim().length === 0) {
       res.status(400).json({
         success: false,
@@ -25,10 +21,8 @@ export const createGuest = async (
       return;
     }
 
-    // Генерируем токен
     const token = generateToken();
 
-    // Вставляем в базу
     const result = await pool.query(
       `INSERT INTO guests (token, name)
        VALUES ($1, $2)
@@ -38,7 +32,6 @@ export const createGuest = async (
 
     const guest: Guest = result.rows[0];
 
-    // Формируем ссылку для подтверждения
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const confirmLink = `${frontendUrl}/invite/${token}`;
 
