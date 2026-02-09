@@ -11,7 +11,7 @@ import {
 
 const router = express.Router();
 // GET запросы - доступны фронтенду и боту
-router.get('/guests', getGuests);
+router.get('/allguests', getGuests);
 
 // POST /guests - только для бота
 router.post('/guests', authenticateBot, createGuest);
