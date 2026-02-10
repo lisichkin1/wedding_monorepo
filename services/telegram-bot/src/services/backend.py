@@ -36,7 +36,7 @@ class BackendService:
     def get_guests(self) -> dict | None:
         try:
             response = requests.get(
-                f"{self.base_url}/api/guests",
+                f"{self.base_url}/api/allguests",
                 timeout=self.timeout
             )
             response.raise_for_status()

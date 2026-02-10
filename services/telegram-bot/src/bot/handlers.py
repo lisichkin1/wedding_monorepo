@@ -259,7 +259,7 @@ async def handle_guests_list(message: Message):
 
             for i, guest in enumerate(guests, 1):
                 status = "✅" if guest.get("confirmed") else "⏳"
-                token = guest.get("token", "")[:12] + "..."  # Сокращаем токен
+                token = guest.get("token", "") 
                 created_at = guest.get("created_at", "")[:10]  # Только дата
                 
                 text += (

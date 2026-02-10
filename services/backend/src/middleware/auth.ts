@@ -5,7 +5,7 @@ export const authenticateBot = (
   res: Response,
   next: NextFunction
 ): void => {
-  const apiKeyHeader = req.headers['X-API-Key'];
+  const apiKeyHeader = req.headers['x-api-key'];
   const apiKey = Array.isArray(apiKeyHeader) ? apiKeyHeader[0] : apiKeyHeader;
 
   if (!apiKey) {
