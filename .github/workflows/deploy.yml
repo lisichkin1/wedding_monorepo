@@ -105,6 +105,19 @@ jobs:
           BACKEND_ENV
           EOF
 
+      - name: Create telegram .env file securely
+        run: |
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} "bash -s" << EOF
+          mkdir -p /root/projects/wedding_monorepo/services/telegram-bot
+          cat > /root/projects/wedding_monorepo/services/telegram-bot/.env << TG_ENV
+          BOT_TOKEN=${{ secrets.BOT_TOKEN }}
+          BACKEND_URL=${{ secrets.BACKEND_URL }}
+          BOT_API_KEY=${{ secrets.BOT_API_KEY }}
+          ALLOWED_USER_IDS=${{ secrets.ALLOWED_USER_IDS }}
+          BOT_OWNER_ID=${{ secrets.BOT_OWNER_ID }}
+          TG_ENV
+          EOF
+
       - name: Create postgres.env file securely
         run: |
           ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} "bash -s" << 'EOF'

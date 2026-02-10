@@ -7,6 +7,7 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage  # ← Добавить
 from src.config.settings import settings
 from src.bot.handlers import router
+from src.bot.middleware import AuthMiddleware
 from src.utils.logger import logger
 
 async def main():
@@ -21,8 +22,10 @@ async def main():
     dp = Dispatcher(storage=storage) 
     
 
+    dp.message.middleware(AuthMiddleware())
+    dp.callback_query.middleware(AuthMiddleware())
+
     dp.include_router(router)
-    
 
     logger.info("✅ Бот запущен")
     await dp.start_polling(bot)

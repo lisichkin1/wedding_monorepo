@@ -14,10 +14,10 @@ services:
       - app-network
     restart: unless-stopped
 
-    #бекенд-сервис
+  #бекенд-сервис
   backend:
     build:
-      context: services/backend # Контекст сборки - текущая директория
+      context: services/backend
       dockerfile: Dockerfile
     env_file:
       - services/backend/.env
@@ -28,6 +28,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  #База
   postgres:
     image: postgres:15-alpine
     container_name: wedding_postgres
@@ -44,10 +45,30 @@ services:
       retries: 5
     restart: unless-stopped
 
+  #Бот
+  telegram-bot:
+    build:
+      context: services/telegram-bot
+      dockerfile: Dockerfile
+    env_file:
+      - services/telegram-bot/.env
+    networks:
+      - app-network
+    depends_on:
+      backend:
+        condition: service_started
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 networks:
   app-network:
     driver: bridge
-    name: wedding_net # Явное имя сети для удобства отладки
+    name: wedding_net
 
 volumes:
   postgres_data:
