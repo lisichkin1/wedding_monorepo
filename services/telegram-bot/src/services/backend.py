@@ -13,17 +13,18 @@ class BackendService:
             'X-API-Key': settings.BOT_API_KEY
         }
 
-    def create_guest(self, name: str) -> dict | None:
+
+    def create_guest(self, name: str, guest_type: str) -> dict | None:
         try:
             response = requests.post(
                 f"{self.base_url}/api/guests",
-                json={"name": name.strip()},
+                    json={"name": name.strip(), "type": guest_type},
                 headers=self.headers,
                 timeout=self.timeout
             )
             response.raise_for_status()
             return response.json()
-            
+
         except RequestException as e:
             logger.error(f"Ошибка создания гостя: {e}")
             if hasattr(e, 'response') and e.response is not None:
@@ -32,7 +33,7 @@ class BackendService:
                 except ValueError:
                     return {"success": False, "error": f"Ошибка сервера: {e}"}
             return {"success": False, "error": "Не удалось подключиться к серверу"}
-    
+
     def get_guests(self) -> dict | None:
         try:
             response = requests.get(

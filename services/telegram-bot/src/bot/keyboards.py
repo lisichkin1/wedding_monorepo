@@ -1,4 +1,4 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
@@ -35,4 +35,15 @@ def get_stats_inline():
     builder.button(text="🔄 Обновить", callback_data="refresh_stats")
     builder.button(text="🏠 В меню", callback_data="back_to_menu")
     builder.adjust(2)  # 2 кнопки в ряд
+    return builder.as_markup()
+
+
+def get_guest_type_keyboard() -> InlineKeyboardMarkup:
+    """Инлайн-клавиатура для выбора типа гостя"""
+    builder = InlineKeyboardBuilder()
+    builder.button(text="👨 Мужчина", callback_data="guest_type:male")
+    builder.button(text="👩 Женщина", callback_data="guest_type:female")
+    builder.button(text="👥 Группа", callback_data="guest_type:group")
+    builder.button(text="❌ Отмена", callback_data="guest_type:cancel")
+    builder.adjust(2, 1)  # 2 кнопки в первой строке, отмена — отдельно
     return builder.as_markup()

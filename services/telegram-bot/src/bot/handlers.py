@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from src.bot.keyboards import get_main_menu, get_stats_inline, get_management_menu
+from src.bot.keyboards import get_main_menu, get_stats_inline, get_management_menu, get_guest_type_keyboard
 from src.services.backend import BackendService
 from src.bot.states import GuestStates
 from src.config.settings import settings
@@ -63,80 +63,115 @@ async def handle_add_guest(message: Message, state: FSMContext):
 
 @router.message(GuestStates.waiting_for_name)
 async def process_guest_name(message: Message, state: FSMContext):
-
     guest_name = message.text.strip()
-
+    
+    # Валидация имени (без изменений)
     if not guest_name:
-        await message.answer(
-            "❌ <b>Ошибка</b>\n\n" "Имя не может быть пустым. Пожалуйста, введите имя:",
-            parse_mode="HTML",
-        )
+        await message.answer("❌ <b>Ошибка</b>\n\nИмя не может быть пустым...", parse_mode="HTML")
         return
-
     if len(guest_name) > 100:
-        await message.answer(
-            "❌ <b>Ошибка</b>\n\n"
-            "Имя слишком длинное (максимум 100 символов). Попробуйте ещё раз:",
+        await message.answer("❌ <b>Ошибка</b>\n\nИмя слишком длинное...", parse_mode="HTML")
+        return
+
+    # Сохраняем имя и переходим к выбору типа
+    await state.update_data(guest_name=guest_name)
+    await state.set_state(GuestStates.waiting_for_type)
+    
+    await message.answer(
+        "👤 <b>Выберите тип гостя:</b>\n\n"
+        "👨 — Мужчина\n"
+        "👩 — Женщина\n"
+        "👥 — Группа (семья, пара, компания)\n\n",
+        parse_mode="HTML",
+        reply_markup=get_guest_type_keyboard()
+    )
+
+@router.callback_query(GuestStates.waiting_for_type, F.data.startswith("guest_type:"))
+async def process_guest_type(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
+    action = callback.data.split(":")[1]
+    
+    if action == "cancel":
+        await state.clear()
+        await callback.message.edit_text(
+            "❌ Добавление гостя отменено",
+            reply_markup=None
+        )
+        await callback.bot.send_message(
+            chat_id=callback.message.chat.id,
+            text="🏠 <b>Меню управления</b>",
             parse_mode="HTML",
+            reply_markup=get_management_menu()
         )
         return
 
-    await message.answer("⏳ Создаю гостя...")
+    # Получаем сохранённое имя
+    data = await state.get_data()
+    guest_name = data.get("guest_name")
+    if not guest_name:
+        await callback.message.edit_text("❌ Ошибка: данные утеряны. Начните заново.", reply_markup=None)
+        await state.clear()
+        return
+
+    # Удаляем сообщение с кнопками
+    await callback.message.delete()
+    creating_msg = await callback.bot.send_message(
+        chat_id=callback.message.chat.id,
+        text="⏳ Создаю гостя..."
+    )
 
     try:
-        result = backend.create_guest(guest_name)
+        # Создаём гостя с типом
+        result = backend.create_guest(guest_name, action)
+        await creating_msg.delete()
 
         if result and result.get("success"):
             guest_data = result.get("data", {})
             confirm_link = guest_data.get("confirmLink", "")
-
+            
+            # Человекочитаемый тип для ответа
+            type_labels = {
+                "male": "Мужчина 👨",
+                "female": "Женщина 👩",
+                "group": "Группа 👥"
+            }
+            
             response_text = (
                 f"✅ <b>Гость успешно добавлен!</b>\n\n"
                 f"👤 <b>Имя:</b> {guest_data.get('name')}\n"
+                f"🔖 <b>Тип:</b> {type_labels.get(action, action)}\n"
                 f"🔗 <b>Ссылка для подтверждения:</b>\n"
                 f"<code>{confirm_link}</code>\n\n"
+                f"📱 Отправьте ссылку гостю для подтверждения участия"
             )
-
-            await message.answer(
-                response_text, parse_mode="HTML", reply_markup=get_management_menu()
-            )
-
-            # Логируем успешное создание
-            logger.info(
-                f"Гость '{guest_name}' успешно создан. Токен: {guest_data.get('token')}"
-            )
-
-            # Сбрасываем состояние
-            await state.clear()
-
-        else:
-            error_msg = (
-                result.get("error", "Неизвестная ошибка")
-                if result
-                else "Сервер недоступен"
-            )
-
-            await message.answer(
-                f"❌ <b>Ошибка создания гостя</b>\n\n"
-                f"{error_msg}\n\n"
-                "Попробуйте ещё раз или обратитесь к администратору.",
+            
+            await callback.bot.send_message(
+                chat_id=callback.message.chat.id,
+                text=response_text,
                 parse_mode="HTML",
-                reply_markup=get_management_menu(),
+                reply_markup=get_management_menu()
             )
-
-            # Логируем ошибку
-            logger.error(f"Ошибка создания гостя '{guest_name}': {error_msg}")
-
-            # Сбрасываем состояние
+            logger.info(f"Гость '{guest_name}' (тип: {action}) создан. Токен: {guest_data.get('token')}")
             await state.clear()
-
+        else:
+            error_msg = result.get("error", "Неизвестная ошибка") if result else "Сервер недоступен"
+            await callback.bot.send_message(
+                chat_id=callback.message.chat.id,
+                text=f"❌ <b>Ошибка создания гостя</b>\n\n{error_msg}",
+                parse_mode="HTML",
+                reply_markup=get_management_menu()
+            )
+            logger.error(f"Ошибка создания гостя '{guest_name}': {error_msg}")
+            await state.clear()
+            
     except Exception as e:
         logger.error(f"Критическая ошибка при создании гостя: {e}")
-        await message.answer(
-            "❌ <b>Критическая ошибка</b>\n\n"
-            "Не удалось создать гостя. Попробуйте позже.",
+        await creating_msg.delete()
+        await callback.bot.send_message(
+            chat_id=callback.message.chat.id,
+            text="❌ <b>Критическая ошибка</b>\n\nНе удалось создать гостя. Попробуйте позже.",
             parse_mode="HTML",
-            reply_markup=get_management_menu(),
+            reply_markup=get_management_menu()
         )
         await state.clear()
 
