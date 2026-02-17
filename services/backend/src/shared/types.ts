@@ -3,10 +3,12 @@ export interface Guest {
   name: string;
   confirmed: boolean;
   created_at: string;
+  type: 'male' | 'female' | 'group';
 }
 
 export interface GuestCreateInput {
   name: string;
+  type: 'male' | 'female' | 'group';
 }
 
 export interface ApiResponse<T = unknown> {

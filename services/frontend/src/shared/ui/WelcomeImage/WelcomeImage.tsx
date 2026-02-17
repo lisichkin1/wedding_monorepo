@@ -19,7 +19,7 @@ export const WelcomeImage = () => {
   useEffect(() => {
     if (imageContainerRef.current) {
       imageContainerRef.current.style.transform = isExpanded
-        ? 'translateX(-30px) scale(1) '
+        ? 'translateX(-30px) scale(1.05) '
         : 'translate(-10px, 30px) scale(1.5) ';
     }
   }, [isExpanded]);

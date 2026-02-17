@@ -12,7 +12,7 @@ export const getGuests = async (
 ): Promise<void> => {
   try {
     const result = await pool.query(
-      `SELECT token, name, confirmed, created_at 
+      `SELECT token, name, type, confirmed, created_at 
        FROM guests 
        ORDER BY created_at DESC`
     );
@@ -41,7 +41,7 @@ export const createGuest = async (
   res: Response<ApiResponse<Guest & { confirmLink: string }>>
 ): Promise<void> => {
   try {
-    const { name } = req.body;
+    const { name, type } = req.body;
 
     if (!name || name.trim().length === 0) {
       res.status(400).json({
@@ -51,13 +51,22 @@ export const createGuest = async (
       return;
     }
 
+    const validTypes = ['male', 'female', 'group'] as const;
+    if (!type || !validTypes.includes(type)) {
+      res.status(400).json({
+        success: false,
+        error: `Тип гостя должен быть одним из: ${validTypes.join(', ')}`
+      });
+      return;
+    }
+
     const token = generateToken();
 
     const result = await pool.query(
       `INSERT INTO guests (token, name)
        VALUES ($1, $2)
-       RETURNING token, name, confirmed, created_at`,
-      [token, name.trim()]
+        RETURNING token, name, type, confirmed, created_at`,
+      [token, name.trim(), type]
     );
 
     const guest: Guest = result.rows[0];
@@ -114,7 +123,7 @@ export const deleteGuest = async (
     const result = await pool.query(
       `DELETE FROM guests 
        WHERE token = $1 
-       RETURNING token, name`,
+      RETURNING token, name, type`,
       [token.trim()]
     );
 
@@ -156,9 +165,9 @@ export const confirmGuest = async (
 
     const result = await pool.query(
       `UPDATE guests 
-       SET confirmed = true 
-       WHERE token = $1 
-       RETURNING token, name, confirmed, created_at`,
+   SET confirmed = true 
+   WHERE token = $1 
+   RETURNING token, name, type, confirmed, created_at`,
       [token]
     );
 
