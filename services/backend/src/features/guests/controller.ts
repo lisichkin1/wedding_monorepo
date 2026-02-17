@@ -63,9 +63,9 @@ export const createGuest = async (
     const token = generateToken();
 
     const result = await pool.query(
-      `INSERT INTO guests (token, name)
-       VALUES ($1, $2)
-        RETURNING token, name, type, confirmed, created_at`,
+      `INSERT INTO guests (token, name, type)
+       VALUES ($1, $2, $3)
+       RETURNING token, name, type, confirmed, created_at`,
       [token, name.trim(), type]
     );
 
