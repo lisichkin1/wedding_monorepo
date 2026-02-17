@@ -9,7 +9,10 @@ services:
       args:
         NGINX_CONF: nginx.conf
     ports:
-      - "3000:3000" # Проброс портов
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     networks:
       - app-network
     restart: unless-stopped
