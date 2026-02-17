@@ -100,6 +100,7 @@ jobs:
           cat > /root/projects/wedding_monorepo/services/backend/.env << BACKEND_ENV
           DATABASE_URL=${{ secrets.DATABASE_URL }}
           FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+          BACKEND_URL=${{ secrets.BACKEND_URL }}
           BOT_API_KEY=${{ secrets.BOT_API_KEY }}
           NODE_ENV=production
           BACKEND_ENV
