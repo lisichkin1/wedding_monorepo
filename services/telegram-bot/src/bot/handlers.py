@@ -12,7 +12,7 @@ router = Router()
 backend = BackendService(settings.BACKEND_URL)
 
 
-# Команда /start
+
 @router.message(Command("start"))
 async def cmd_start(message: Message):
     user = message.from_user
@@ -25,18 +25,15 @@ async def cmd_start(message: Message):
         reply_markup=get_main_menu(),
     )
 
-
-# Кнопка "Статистика"
 @router.message(F.text == "📊 Управление")
 async def handle_management(message: Message):
     await message.answer(
         "🛠️ <b>Меню управления</b>\n\nВыберите действие:",
         parse_mode="HTML",
-        reply_markup=get_management_menu(),  # Показываем подменю
+        reply_markup=get_management_menu(), 
     )
 
 
-# Кнопка "Назад"
 @router.message(F.text == "⬅️ Назад")
 async def handle_back(message: Message):
     await message.answer(
@@ -46,10 +43,7 @@ async def handle_back(message: Message):
 
 @router.message(F.text == "➕️ Добавить гостя")
 async def handle_add_guest(message: Message, state: FSMContext):
-    """
-    Начало процесса добавления гостя — запрашиваем имя
-    """
-    # Устанавливаем состояние ожидания имени
+
     await state.set_state(GuestStates.waiting_for_name)
 
     await message.answer(
@@ -65,7 +59,6 @@ async def handle_add_guest(message: Message, state: FSMContext):
 async def process_guest_name(message: Message, state: FSMContext):
     guest_name = message.text.strip()
     
-    # Валидация имени (без изменений)
     if not guest_name:
         await message.answer("❌ <b>Ошибка</b>\n\nИмя не может быть пустым...", parse_mode="HTML")
         return
@@ -73,7 +66,6 @@ async def process_guest_name(message: Message, state: FSMContext):
         await message.answer("❌ <b>Ошибка</b>\n\nИмя слишком длинное...", parse_mode="HTML")
         return
 
-    # Сохраняем имя и переходим к выбору типа
     await state.update_data(guest_name=guest_name)
     await state.set_state(GuestStates.waiting_for_type)
     
@@ -105,7 +97,6 @@ async def process_guest_type(callback: CallbackQuery, state: FSMContext):
         )
         return
 
-    # Получаем сохранённое имя
     data = await state.get_data()
     guest_name = data.get("guest_name")
     if not guest_name:
@@ -113,7 +104,6 @@ async def process_guest_type(callback: CallbackQuery, state: FSMContext):
         await state.clear()
         return
 
-    # Удаляем сообщение с кнопками
     await callback.message.delete()
     creating_msg = await callback.bot.send_message(
         chat_id=callback.message.chat.id,
@@ -121,7 +111,6 @@ async def process_guest_type(callback: CallbackQuery, state: FSMContext):
     )
 
     try:
-        # Создаём гостя с типом
         result = backend.create_guest(guest_name, action)
         await creating_msg.delete()
 
@@ -129,7 +118,6 @@ async def process_guest_type(callback: CallbackQuery, state: FSMContext):
             guest_data = result.get("data", {})
             confirm_link = guest_data.get("confirmLink", "")
             
-            # Человекочитаемый тип для ответа
             type_labels = {
                 "male": "Мужчина 👨",
                 "female": "Женщина 👩",
@@ -177,7 +165,6 @@ async def process_guest_type(callback: CallbackQuery, state: FSMContext):
 
 @router.message(F.text == "🗑️ Удалить гостя")
 async def handle_delete_guest(message: Message, state: FSMContext):
-    """Начало процесса удаления гостя — запрашиваем токен"""
     await state.set_state(GuestStates.waiting_for_token)
 
     await message.answer(
@@ -190,10 +177,8 @@ async def handle_delete_guest(message: Message, state: FSMContext):
 
 @router.message(GuestStates.waiting_for_token)
 async def process_guest_token(message: Message, state: FSMContext):
-    """Обработка введённого токена и удаление гостя"""
     token = message.text.strip()
 
-    # Валидация
     if not token:
         await message.answer(
             "❌ <b>Ошибка</b>\n\n"
@@ -262,7 +247,7 @@ async def process_guest_token(message: Message, state: FSMContext):
 
 @router.message(F.text == "📋 Список гостей")
 async def handle_guests_list(message: Message):
-    """Получение и отображение списка всех гостей"""
+  
     await message.answer("⏳ Загружаю список гостей...")
 
     try:
@@ -280,7 +265,6 @@ async def handle_guests_list(message: Message):
                 )
                 return
 
-            # Формируем сообщение со списком гостей
             total = len(guests)
             confirmed = sum(1 for g in guests if g.get("confirmed"))
             
@@ -295,17 +279,21 @@ async def handle_guests_list(message: Message):
             for i, guest in enumerate(guests, 1):
                 status = "✅" if guest.get("confirmed") else "⏳"
                 token = guest.get("token", "") 
-                created_at = guest.get("created_at", "")[:10]  # Только дата
+                created_at = guest.get("created_at", "")[:10] 
+                is_confirmed = guest.get("confirmed")
                 
+                status_text = "Подтверждено" if is_confirmed else "Не подтверждено"
+
                 text += (
                     f"\n<b>{i}.</b> {status} <b>{guest.get('name')}</b>\n"
+                    f"   📊 Статус: <b>{status_text}</b>\n"
                     f"   🔑 <code>{token}</code>\n"
                     f"   📅 {created_at}\n"
                 )
 
-            # Если сообщение слишком длинное, разбиваем на части
+    
             if len(text) > 4096:
-                # Отправляем краткую статистику
+        
                 summary = (
                     f"📋 <b>Список гостей</b>\n\n"
                     f"👥 Всего: <b>{total}</b>\n"
@@ -349,8 +337,6 @@ async def handle_guests_list(message: Message):
             reply_markup=get_management_menu(),
         )
 
-
-# Кнопка "Настройки"
 @router.message(F.text == "⚙️ Настройки")
 async def handle_settings(message: Message):
     await message.answer(
@@ -360,7 +346,6 @@ async def handle_settings(message: Message):
     )
 
 
-# Кнопка "Помощь"
 @router.message(F.text == "ℹ️ Помощь")
 async def handle_help(message: Message):
     await message.answer(
@@ -373,11 +358,9 @@ async def handle_help(message: Message):
     )
 
 
-# Инлайн-кнопки
 @router.callback_query(F.data == "refresh_stats")
 async def refresh_stats(callback: CallbackQuery):
     await callback.answer("🔄 Обновляю...")
-    # Здесь можно повторно запросить статистику
     await callback.message.edit_text(
         "✅ Статистика обновлена!", reply_markup=get_stats_inline()
     )
@@ -388,8 +371,6 @@ async def back_to_menu(callback: CallbackQuery):
     await callback.answer()
     await callback.message.edit_text("🏠 Главное меню", reply_markup=get_main_menu())
 
-
-# Обработка неизвестных сообщений
 @router.message()
 async def unknown_message(message: Message):
     await message.answer(
