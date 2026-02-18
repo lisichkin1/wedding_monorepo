@@ -35,6 +35,56 @@ export const getGuests = async (
   }
 };
 
+// Получение гостя по токену
+export const getGuestByToken = async (
+  req: Request<{ token: string }>,
+  res: Response<ApiResponse<Guest>>
+): Promise<void> => {
+  try {
+    const { token } = req.params;
+
+    // Валидация токена
+    if (!token || token.trim().length === 0) {
+      res.status(400).json({
+        success: false,
+        error: 'Токен обязателен'
+      });
+      return;
+    }
+
+    const result = await pool.query(
+      `SELECT token, name, type, confirmed, created_at 
+       FROM guests 
+       WHERE token = $1`,
+      [token.trim()]
+    );
+
+    if (result.rows.length === 0) {
+      res.status(404).json({
+        success: false,
+        error: 'Гость не найден'
+      });
+      return;
+    }
+
+    const guest: Guest = result.rows[0];
+
+    console.log(`Запрошен гость по токену: ${token} (${guest.name})`);
+
+    res.json({
+      success: true,
+      message: 'Информация о госте получена',
+      data: guest
+    });
+  } catch (error) {
+    console.error('Ошибка получения гостя по токену:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Ошибка сервера'
+    });
+  }
+};
+
 // Создание гостя
 export const createGuest = async (
   req: Request<never, never, GuestCreateInput>,

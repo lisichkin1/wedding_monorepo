@@ -6,14 +6,16 @@ import {
   confirmGuest,
   createGuest,
   deleteGuest,
+  getGuestByToken,
   getGuests
 } from './controller';
 
 const router = express.Router();
-// GET запросы - доступны фронтенду и боту
-router.get('/allguests', getGuests);
+// доступны фронтенду и боту
+router.get('/guests/:token', getGuestByToken);
 
-// POST /guests - только для бота
+// только для бота
+router.get('/allguests', authenticateBot, getGuests);
 router.post('/guests', authenticateBot, createGuest);
 router.delete('/guests/:token', authenticateBot, deleteGuest);
 

@@ -13,5 +13,5 @@ export interface StructureItemType {
 
 export const getHierarchy = async () =>
   await privateApiClient<DataRes<StructureItemType[]>>({
-    url: '/facts'
+    url: '/api/allguests'
   });

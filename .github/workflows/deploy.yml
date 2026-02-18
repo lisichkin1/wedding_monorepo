@@ -106,6 +106,16 @@ jobs:
           BACKEND_ENV
           EOF
 
+      - name: Create frontend .env file securely
+        run: |
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} "bash -s" << EOF
+          mkdir -p /root/projects/wedding_monorepo/services/frontend
+          cat > /root/projects/wedding_monorepo/services/frontend/.env << FRONTEND_ENV
+          VITE_HOST=${{ secrets.BACKEND_URL }}
+          NODE_ENV=production
+          FRONTEND_ENV
+          EOF
+
       - name: Create telegram .env file securely
         run: |
           ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} "bash -s" << EOF

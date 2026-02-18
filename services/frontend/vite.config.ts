@@ -43,11 +43,10 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       proxy: {
-        '/facts': {
-          target: env.VITE_ORGSTRUCT_HOST,
+        '/api': {
+          target: env.VITE_HOST,
           changeOrigin: true,
-          secure: false,
-          rewrite: (path) => path.replace(/^\/orgstruct-api/, '')
+          secure: false
         }
       }
     },
