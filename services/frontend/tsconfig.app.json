@@ -26,6 +26,7 @@
     /* Aliases */
     "baseUrl": "./src",
     "paths": {
+      "@app/*": ["./app/*"],
       "@pages/*": ["./pages/*"],
       "@widgets/*": ["./widgets/*"],
       "@features/*": ["./features/*"],
@@ -44,7 +45,8 @@
     "declaration": true,
     "noImplicitThis": true,
     "strictNullChecks": true,
-    "incremental": true
+    "incremental": true,
+    "typeRoots": ["./node_modules/@types", "./node_modules/@yandex"]
   },
   "include": ["src", "vite.config.ts", "src/**/*.d.ts"],
   "exclude": ["node_modules"]

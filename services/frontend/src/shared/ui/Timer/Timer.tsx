@@ -8,13 +8,7 @@ interface TimerProps {
 
 export const Timer = ({ isView }: TimerProps) => {
   const { days, hours, minutes, seconds } = useTimer();
-  console.log(days, hours, minutes, seconds);
-  console.log(
-    100 - (100 / 365) * days,
-    100 - (100 / 60) * hours,
-    100 - (100 / 60) * minutes,
-    100 - (100 / 60) * seconds
-  );
+
   return (
     <div className={cn(s.timer, { [s.timerView]: !isView })}>
       <div

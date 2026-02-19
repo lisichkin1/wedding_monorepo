@@ -33,6 +33,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
+        '@app': path.resolve(__dirname, './src/app'),
         '@pages': path.resolve(__dirname, './src/pages'),
         '@widgets': path.resolve(__dirname, './src/widgets'),
         '@features': path.resolve(__dirname, './src/features'),

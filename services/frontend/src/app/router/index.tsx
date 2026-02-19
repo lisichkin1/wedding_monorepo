@@ -1,6 +1,5 @@
 import { ErrorBoundary } from 'react-error-boundary';
 import { createBrowserRouter } from 'react-router-dom';
-import homeRoute from '@pages/home/route';
 import inviteRoute from '@pages/invite/route';
 import { ErrorFallback } from '@shared/ui';
 import { MainLayout } from '../layouts/MainLayout';
@@ -14,6 +13,6 @@ export const router = createBrowserRouter([
       </ErrorBoundary>
     ),
 
-    children: [homeRoute, inviteRoute]
+    children: [inviteRoute]
   }
 ]);

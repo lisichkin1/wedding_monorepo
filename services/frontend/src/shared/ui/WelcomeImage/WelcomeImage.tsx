@@ -1,5 +1,6 @@
+import { StoreContext } from '@app/providers/ContextProvider';
 import cn from 'classnames';
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import WelcomeImg from '../../images/320.jpg';
 import { Icon } from '../Icon';
 import { LazyImage } from '../LazyImage';
@@ -9,9 +10,10 @@ import s from './styles.module.scss';
 export const WelcomeImage = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOpenLock, setIsOpenLock] = useState(false);
-
+  const store = useContext(StoreContext);
   const handleClick = () => {
     setIsExpanded(!isExpanded);
+    store?.toggleViewScreen();
   };
 
   const imageContainerRef = useRef<HTMLDivElement>(null);
@@ -23,6 +25,14 @@ export const WelcomeImage = () => {
         : 'translate(-10px, 30px) scale(1.5) ';
     }
   }, [isExpanded]);
+
+  useEffect(() => {
+    setIsExpanded(false);
+
+    if (store?.resetWelcomeState) {
+      store.resetWelcomeState();
+    }
+  }, []);
   return (
     <div className={s.container}>
       <div

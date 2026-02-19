@@ -1,1 +1,1 @@
-export * as factsAPI from './facts-api';
+export * as weddingAPI from './wedding-api';
