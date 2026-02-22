@@ -7,6 +7,8 @@ from src.services.backend import BackendService
 from src.bot.states import GuestStates
 from src.config.settings import settings
 from src.utils.logger import logger
+from src.utils.getStatus import get_status_display
+import asyncio
 
 router = Router()
 backend = BackendService(settings.BACKEND_URL)
@@ -128,6 +130,7 @@ async def process_guest_type(callback: CallbackQuery, state: FSMContext):
                 f"✅ <b>Гость успешно добавлен!</b>\n\n"
                 f"👤 <b>Имя:</b> {guest_data.get('name')}\n"
                 f"🔖 <b>Тип:</b> {type_labels.get(action, action)}\n"
+                f"📊 <b>Статус:</b> {get_status_display('')['emoji']} {get_status_display('')['text']}\n"
                 f"🔗 <b>Ссылка для подтверждения:</b>\n"
                 f"<code>{confirm_link}</code>\n\n"
                 f"📱 Отправьте ссылку гостю для подтверждения участия"
@@ -247,7 +250,6 @@ async def process_guest_token(message: Message, state: FSMContext):
 
 @router.message(F.text == "📋 Список гостей")
 async def handle_guests_list(message: Message):
-  
     await message.answer("⏳ Загружаю список гостей...")
 
     try:
@@ -266,50 +268,71 @@ async def handle_guests_list(message: Message):
                 return
 
             total = len(guests)
-            confirmed = sum(1 for g in guests if g.get("confirmed"))
-            
-            text = (
+            attending = sum(1 for g in guests if g.get("confirmed") == "attending")
+            declined = sum(1 for g in guests if g.get("confirmed") == "declined")
+            pending = sum(1 for g in guests if g.get("confirmed") == "pending")
+            no_response = sum(1 for g in guests if not g.get("confirmed") or g.get("confirmed") == "")
+
+  
+            header = (
                 f"📋 <b>Список гостей</b>\n\n"
                 f"👥 Всего: <b>{total}</b>\n"
-                f"✅ Подтвердили: <b>{confirmed}</b>\n"
-                f"⏳ Ожидают: <b>{total - confirmed}</b>\n\n"
+                f"✅ Придут: <b>{attending}</b>\n"
+                f"❌ Не смогут: <b>{declined}</b>\n"
+                f"⏳ Сообщу позже: <b>{pending}</b>\n"
+                f"❓ Не ответили: <b>{no_response}</b>\n\n"
                 f"<b>Подробный список:</b>\n"
             )
 
+            guest_blocks = []
             for i, guest in enumerate(guests, 1):
-                status = "✅" if guest.get("confirmed") else "⏳"
+                status = guest.get("confirmed", "pending")
+                status_info = get_status_display(status)
+                
                 token = guest.get("token", "") 
                 created_at = guest.get("created_at", "")[:10] 
-                is_confirmed = guest.get("confirmed")
-                
-                status_text = "Подтверждено" if is_confirmed else "Не подтверждено"
+                guest_name = guest.get("name", "Без имени")
 
-                text += (
-                    f"\n<b>{i}.</b> {status} <b>{guest.get('name')}</b>\n"
-                    f"   📊 Статус: <b>{status_text}</b>\n"
+                block = (
+                    f"\n<b>{i}.</b> <b>{guest_name}</b>\n"
+                    f"   📊 Статус: <b>{status_info['text']}</b>\n"
                     f"   🔑 <code>{token}</code>\n"
                     f"   📅 {created_at}\n"
                 )
+                guest_blocks.append(block)
 
-    
-            if len(text) > 4096:
-        
-                summary = (
-                    f"📋 <b>Список гостей</b>\n\n"
-                    f"👥 Всего: <b>{total}</b>\n"
-                    f"✅ Подтвердили: <b>{confirmed}</b>\n"
-                    f"⏳ Ожидают: <b>{total - confirmed}</b>\n\n"
-                    f"<i>Список слишком длинный для отображения в одном сообщении.</i>"
-                )
-                await message.answer(
-                    summary, parse_mode="HTML", reply_markup=get_management_menu()
-                )
-            else:
-                await message.answer(
-                    text, parse_mode="HTML", reply_markup=get_management_menu()
-                )
+            MAX_LENGTH = 4000
+            messages_to_send = []
+            current_chunk = header
+            header_sent = False
 
-            logger.info(f"Отображён список {total} гостей")
+            for block in guest_blocks:
+              
+                if len(current_chunk) + len(block) > MAX_LENGTH:
+                    messages_to_send.append(current_chunk)
+                  
+                    current_chunk = header if not header_sent else "📋 <b>Продолжение списка:</b>\n"
+                    header_sent = True
+                
+                current_chunk += block
+
+            if current_chunk.strip():
+                messages_to_send.append(current_chunk)
+
+            for idx, text in enumerate(messages_to_send):
+           
+                reply_markup = get_management_menu() if idx == len(messages_to_send) - 1 else None
+                
+                await message.answer(
+                    text,
+                    parse_mode="HTML",
+                    reply_markup=reply_markup
+                )
+         
+                if idx < len(messages_to_send) - 1:
+                    await asyncio.sleep(0.3)
+
+            logger.info(f"Отображён список {total} гостей в {len(messages_to_send)} сообщениях")
 
         else:
             error_msg = (
@@ -317,7 +340,6 @@ async def handle_guests_list(message: Message):
                 if result
                 else "Сервер недоступен"
             )
-
             await message.answer(
                 f"❌ <b>Ошибка получения списка</b>\n\n"
                 f"{error_msg}\n\n"
@@ -325,7 +347,6 @@ async def handle_guests_list(message: Message):
                 parse_mode="HTML",
                 reply_markup=get_management_menu(),
             )
-
             logger.error(f"Ошибка получения списка гостей: {error_msg}")
 
     except Exception as e:

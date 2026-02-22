@@ -1,7 +1,9 @@
+export type GuestResponse = 'attending' | 'declined' | 'pending' | '';
+
 export interface Guest {
   token: string;
   name: string;
-  confirmed: boolean;
+  confirmed: GuestResponse;
   created_at: string;
   type: 'male' | 'female' | 'group';
 }

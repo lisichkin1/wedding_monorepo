@@ -1,6 +1,11 @@
 import { type Request, type Response } from 'express';
 
-import { ApiResponse, Guest, GuestCreateInput } from '~/shared/types';
+import {
+  ApiResponse,
+  Guest,
+  GuestCreateInput,
+  GuestResponse
+} from '~/shared/types';
 import { generateToken } from '~/utils';
 
 import pool from '../../db';
@@ -113,10 +118,10 @@ export const createGuest = async (
     const token = generateToken();
 
     const result = await pool.query(
-      `INSERT INTO guests (token, name, type)
-       VALUES ($1, $2, $3)
-       RETURNING token, name, type, confirmed, created_at`,
-      [token, name.trim(), type]
+      `INSERT INTO guests (token, name, type, confirmed)
+      VALUES ($1, $2, $3, $4)
+      RETURNING token, name, type, confirmed, created_at`,
+      [token, name.trim(), type, '']
     );
 
     const guest: Guest = result.rows[0];
@@ -206,19 +211,36 @@ export const deleteGuest = async (
 };
 
 // Подтверждение участия
+// Обновлённый confirmGuest
 export const confirmGuest = async (
-  req: Request<{ token: string }>,
+  req: Request<{ token: string }, never, { response: GuestResponse }>,
   res: Response<ApiResponse<Guest>>
 ): Promise<void> => {
   try {
     const { token } = req.params;
+    const { response } = req.body;
+
+    // Валидация входных данных
+    const validResponses: GuestResponse[] = [
+      '',
+      'attending',
+      'declined',
+      'pending'
+    ];
+    if (!response || !validResponses.includes(response)) {
+      res.status(400).json({
+        success: false,
+        error: `Статус должен быть одним из: ${validResponses.join(', ')}`
+      });
+      return;
+    }
 
     const result = await pool.query(
       `UPDATE guests 
-   SET confirmed = true 
-   WHERE token = $1 
-   RETURNING token, name, type, confirmed, created_at`,
-      [token]
+       SET confirmed = $1 
+       WHERE token = $2 
+       RETURNING token, name, type, confirmed, created_at`,
+      [response, token]
     );
 
     if (result.rows.length === 0) {
@@ -230,16 +252,15 @@ export const confirmGuest = async (
     }
 
     const guest: Guest = result.rows[0];
-
-    console.log(`✅ Гость "${guest.name}" подтвердил участие`);
+    console.log(`✅ Гость "${guest.name}" обновил статус: ${response}`);
 
     res.json({
       success: true,
-      message: 'Участие подтверждено!',
+      message: 'Статус участия обновлён',
       data: guest
     });
   } catch (error) {
-    console.error('Ошибка подтверждения:', error);
+    console.error('Ошибка обновления статуса гостя:', error);
     res.status(500).json({
       success: false,
       error: 'Ошибка сервера'
