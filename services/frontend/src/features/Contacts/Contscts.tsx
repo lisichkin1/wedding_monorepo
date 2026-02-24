@@ -15,8 +15,8 @@ export const Contscts = () => {
       <a href="tel:+79873319162" className={s.phone}>
         Жених: +7 987 331 9162
       </a>
-      <a href="tel:+79873319162" className={s.phone}>
-        Невеста: +7 987 331 9162
+      <a href="tel:+79372244808" className={s.phone}>
+        Невеста: +7 937 224 4808
       </a>
     </div>
   );

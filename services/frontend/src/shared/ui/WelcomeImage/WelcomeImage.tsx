@@ -33,6 +33,7 @@ export const WelcomeImage = () => {
       store.resetWelcomeState();
     }
   }, []);
+
   return (
     <div className={s.container}>
       <div
