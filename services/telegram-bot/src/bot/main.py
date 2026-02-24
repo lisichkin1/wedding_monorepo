@@ -4,7 +4,7 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.fsm.storage.memory import MemoryStorage  # ← Добавить
+from aiogram.fsm.storage.memory import MemoryStorage  
 from src.config.settings import settings
 from src.bot.handlers import router
 from src.bot.middleware import AuthMiddleware

@@ -48,7 +48,6 @@ export const getGuestByToken = async (
   try {
     const { token } = req.params;
 
-    // Валидация токена
     if (!token || token.trim().length === 0) {
       res.status(400).json({
         success: false,
@@ -166,7 +165,6 @@ export const deleteGuest = async (
   try {
     const { token } = req.params;
 
-    // Валидация токена
     if (!token || token.trim().length === 0) {
       res.status(400).json({
         success: false,
@@ -211,7 +209,6 @@ export const deleteGuest = async (
 };
 
 // Подтверждение участия
-// Обновлённый confirmGuest
 export const confirmGuest = async (
   req: Request<{ token: string }, never, { response: GuestResponse }>,
   res: Response<ApiResponse<Guest>>
@@ -220,7 +217,6 @@ export const confirmGuest = async (
     const { token } = req.params;
     const { response } = req.body;
 
-    // Валидация входных данных
     const validResponses: GuestResponse[] = [
       '',
       'attending',

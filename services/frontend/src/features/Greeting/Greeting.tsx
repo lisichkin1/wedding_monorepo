@@ -1,8 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
 import cn from 'classnames';
 import { useInView } from 'react-intersection-observer';
 import { useParams } from 'react-router-dom';
-import { weddingAPI } from '@shared/api';
+import { useGetInviteData } from '@shared/hooks';
 import { Calendar } from '@shared/ui/Calendar';
 import s from './styles.module.scss';
 
@@ -16,19 +15,7 @@ export const Greeting = () => {
     threshold: 0.5
   });
 
-  const { data: inviteData } = useQuery({
-    queryKey: ['inviteData'],
-    queryFn: () =>
-      weddingAPI.getInvite({
-        token: token
-      }),
-    meta: {
-      errorHandling: 'global'
-    },
-    select: (response) => {
-      return response?.data;
-    }
-  });
+  const { inviteData } = useGetInviteData({ token });
 
   const getGreetingWord = () => {
     if (inviteData?.type === 'male') {

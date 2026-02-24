@@ -7,7 +7,7 @@ import { defineConfig, loadEnv } from 'vite';
 import svgr from 'vite-plugin-svgr';
 
 const hash = Math.floor(Math.random() * 90000) + 10000;
-//test 2
+
 export default defineConfig(({ mode }) => {
   const env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 

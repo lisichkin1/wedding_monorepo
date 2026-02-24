@@ -13,10 +13,8 @@ export const useTimer = () => {
     const timer = () => {
       const futureDate = moment.tz(TIME, 'Europe/Saratov');
 
-      // Текущее локальное время пользователя
       const now = moment();
 
-      // Разница в секундах
       const diff = futureDate.diff(now, 'seconds');
 
       if (diff > 0) {

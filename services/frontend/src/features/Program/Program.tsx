@@ -15,25 +15,26 @@ export const Program = () => {
     >
       <span className={s.mainTitle}>ПРОРАММА ДНЯ</span>
       <div className={s.program}>
-        <div className={cn(s.rigntUp, s.subTitleStep)}>
-          Приготовьте платочки для трогательного момента
-        </div>
-        <div className={cn(s.rigntMiddle, s.subTitleStep)}>
-          Время вкусной еды, танцев и развлечений
-        </div>
-        <div className={cn(s.rigntDown, s.subTitleStep)}>
-          Мы очень благодарны, что Вы провели с нами этот чудесный день!
-        </div>
-        <div className={cn(s.middleDivider)}>
+        <div className={s.div5}>
           <Icon name="heart" fill="black" className={s.heartIcon} size={16} />
           <Icon name="heart" fill="black" className={s.heartIcon} size={16} />
         </div>
-        <div className={cn(s.leftUpFirst, s.time)}>15:20</div>
-        <div className={cn(s.leftUpSecond, s.titleStep)}>Регистрация</div>
-        <div className={cn(s.leftMiddleFirst, s.time)}>17:00</div>
-        <div className={cn(s.leftMiddleSecond, s.titleStep)}>Банкет</div>
-        <div className={cn(s.leftDowmFirst, s.time)}>00:00</div>
-        <div className={cn(s.leftDowmSecond, s.titleStep)}>Завершение</div>
+        <div className={s.div1}>
+          <div className={s.time}>14:30</div>
+          <div className={s.titleStep}>Сбор гостей</div>
+        </div>
+        <div className={s.div2}>
+          <div className={s.time}>15:00</div>
+          <div className={s.titleStep}>Банкет</div>
+        </div>
+        <div className={s.div3}>
+          <div className={cn(s.time, s.timeLeft)}>14:45</div>
+          <div className={cn(s.titleStep, s.titleStepLeft)}>Церемония</div>
+        </div>
+        <div className={s.div4}>
+          <div className={cn(s.time, s.timeLeft)}>21:00</div>
+          <div className={cn(s.titleStep, s.titleStepLeft)}>Завершение</div>
+        </div>
       </div>
     </div>
   );
