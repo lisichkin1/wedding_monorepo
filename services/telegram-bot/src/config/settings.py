@@ -20,3 +20,4 @@ class Settings:
         raise ValueError("BOT_TOKEN не указан в .env файле")
 
 settings = Settings() 
+#ids
