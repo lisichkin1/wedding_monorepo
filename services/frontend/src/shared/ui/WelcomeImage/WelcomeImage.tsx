@@ -11,7 +11,17 @@ export const WelcomeImage = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOpenLock, setIsOpenLock] = useState(false);
   const store = useContext(StoreContext);
+
+  const audioRef = useRef<HTMLAudioElement>(null);
+
   const handleClick = () => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.5;
+      audioRef.current.play().catch((error) => {
+        console.log('Воспроизведение не удалось:', error);
+      });
+    }
+
     setIsExpanded(!isExpanded);
     store?.toggleViewScreen();
   };
@@ -34,8 +44,20 @@ export const WelcomeImage = () => {
     }
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    };
+  }, []);
+
   return (
     <div className={s.container}>
+      <audio ref={audioRef} loop preload="auto">
+        <source src="/background.mp3" type="audio/mpeg" />
+      </audio>
       <div
         className={cn(s.imageWrapper, {
           [s.imageWrapperExpanded]: isExpanded
