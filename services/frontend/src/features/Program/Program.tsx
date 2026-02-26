@@ -13,7 +13,7 @@ export const Program = () => {
       className={cn(s.container, { [s.hidden]: !inViewProgram })}
       ref={refProgram}
     >
-      <span className={s.mainTitle}>ПРОРАММА ДНЯ</span>
+      <span className={s.mainTitle}>ПРОГРАММА ДНЯ</span>
       <div className={s.program}>
         <div className={s.div5}>
           <Icon name="heart" fill="black" className={s.heartIcon} size={16} />
