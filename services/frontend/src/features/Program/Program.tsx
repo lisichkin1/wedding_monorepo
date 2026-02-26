@@ -20,7 +20,7 @@ export const Program = () => {
           <Icon name="heart" fill="black" className={s.heartIcon} size={16} />
         </div>
         <div className={s.div1}>
-          <div className={s.time}>14:30</div>
+          <div className={s.time}>14:00</div>
           <div className={s.titleStep}>Сбор гостей</div>
         </div>
         <div className={s.div2}>
